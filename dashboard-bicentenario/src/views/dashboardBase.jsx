@@ -235,7 +235,7 @@ const BoliviaMapBlock = () => (
     <h2>🗺️ Distribución Geográfica</h2>
     <BoliviaMap 
       data={sampleBoliviaData}
-      title="Distribución por Departamento"
+      title="Cantidad de Empresas por Departamento"
       width={500}
       height={300}
       colorRange={['#e3f2fd', '#1565c0']}

@@ -12,7 +12,7 @@ if (typeof HC_map === "function") {
 
 const BoliviaMap = ({
   data = {},
-  title = "Distribución por Departamento",
+  title = "Cantidad de empresas por departamento",
   colorRange = ["#e3f2fd", "#1565c0"], // de azul claro a azul oscuro
   width = 600,
   height = 500,
