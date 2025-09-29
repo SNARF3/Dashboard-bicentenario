@@ -14,6 +14,12 @@ import {
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 
+// Importar el archivo CSS
+import '../css/dashboardBase.css';
+
+// Importar el nuevo componente BoliviaMap
+import BoliviaMap, { sampleBoliviaData } from '../components/BoliviaMap';
+
 // Registrar componentes de Chart.js
 ChartJS.register(
   CategoryScale,
@@ -33,22 +39,6 @@ const StatCard = ({ title, value, unit = '', className = '' }) => (
     <h3>{title}</h3>
     <div className="stat-value">
       {value}{unit}
-    </div>
-  </div>
-);
-
-const CounterGrid = ({ data, title, className = '' }) => (
-  <div className={`counter-grid ${className}`}>
-    <h2>{title}</h2>
-    <div className="grid">
-      {data.map((item, index) => (
-        <StatCard
-          key={index}
-          title={item.label}
-          value={item.value}
-          unit={item.unit || ''}
-        />
-      ))}
     </div>
   </div>
 );
@@ -165,17 +155,14 @@ const KPIBlock = ({ averageAge, averageOffices }) => (
   <div className="dashboard-block kpi-block">
     <h2>📊 Indicadores Clave</h2>
     <div className="kpi-grid">
-      <StatCard
-        title="Promedio de Antigüedad"
-        value={averageAge}
-        unit=" años"
-        className="kpi-card"
-      />
-      <StatCard
-        title="Promedio de Sedes"
-        value={averageOffices}
-        className="kpi-card"
-      />
+      <div className="kpi-card">
+        <h3>Promedio de Antigüedad</h3>
+        <div className="stat-value">{averageAge} años</div>
+      </div>
+      <div className="kpi-card">
+        <h3>Promedio de Sedes</h3>
+        <div className="stat-value">{averageOffices}</div>
+      </div>
     </div>
   </div>
 );
@@ -243,6 +230,20 @@ const ODSBlock = ({ data }) => (
   </div>
 );
 
+const BoliviaMapBlock = () => (
+  <div className="dashboard-block map-block">
+    <h2>🗺️ Distribución Geográfica</h2>
+    <BoliviaMap 
+      data={sampleBoliviaData}
+      title="Distribución por Departamento"
+      width={500}
+      height={300}
+      colorRange={['#e3f2fd', '#1565c0']}
+      defaultColor="#f5f5f5"
+    />
+  </div>
+);
+
 // ==================== DASHBOARD PRINCIPAL ====================
 const DashboardBase = () => {
   const mockData = {
@@ -278,7 +279,8 @@ const DashboardBase = () => {
     ods: [
       { label: 'Con ODS', value: 40 },
       { label: 'Sin ODS', value: 60 },
-    ]
+    ],
+    geographicDistribution: sampleBoliviaData
   };
 
   return (
@@ -289,26 +291,27 @@ const DashboardBase = () => {
       </header>
 
       <div className="dashboard-layout">
-        {/* Fila 1: KPIs (ocupa toda la fila) */}
-        <div className="dashboard-row">
-          <KPIBlock {...mockData.kpi} />
-        </div>
-
-        {/* Fila 2: Tamaños de empresa (ocupa toda la fila) */}
-        <div className="dashboard-row">
-          <CompanySizeBlock data={mockData.companySizes} />
-        </div>
-
-        {/* Fila 3: Timeline y Sectores (2 gráficos) */}
+        {/* Fila 1: KPIs (ancho completo) */}
+        <KPIBlock {...mockData.kpi} />
+        
+        {/* Fila 2: Tamaños de empresa (ancho completo) */}
+        <CompanySizeBlock data={mockData.companySizes} />
+        
+        {/* Fila 3: Timeline y Sectores */}
         <div className="dashboard-row">
           <TimelineBlock data={mockData.timeline} />
           <SectorBlock data={mockData.sectors} />
         </div>
 
-        {/* Fila 4: Exportadoras y ODS (2 gráficos) */}
+        {/* Fila 4: Exportadoras y ODS */}
         <div className="dashboard-row">
           <ExportBlock data={mockData.exports} />
           <ODSBlock data={mockData.ods} />
+        </div>
+
+        {/* Fila 5: Mapa de Bolivia (ancho completo) */}
+        <div className="dashboard-row">
+          <BoliviaMapBlock />
         </div>
       </div>
     </div>

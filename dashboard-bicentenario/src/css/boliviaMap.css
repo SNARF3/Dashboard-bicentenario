@@ -1,0 +1,77 @@
+/* styles/bolivia-map.css */
+.bolivia-map {
+    background: #D9CBBF;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin: 20px 0;
+  }
+  
+  .map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  
+  .map-header h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.3em;
+  }
+  
+  .map-legend {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: #666;
+  }
+  
+  .legend-gradient {
+    width: 80px;
+    height: 6px;
+    border-radius: 3px;
+  }
+  
+  .map-container {
+    display: flex;
+    justify-content: center;
+    margin: 15px 0;
+  }
+  
+  .departments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+    margin-top: 15px;
+  }
+  
+  .department-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+  
+  .department-item:hover {
+    background: #f5f5f5;
+  }
+  
+  .color-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+  }
+  
+  .loading, .error {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+  }

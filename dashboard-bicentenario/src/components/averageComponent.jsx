@@ -10,7 +10,7 @@ const StatCard = ({
 }) => {
   if (isLoading) {
     return (
-      <div className={`stat-card loading ${className}`}>
+      <div className={`stat-card loading ${className}`} style={{ width: '100%', height: '100%' }}>
         <h3>{title}</h3>
         <div className="skeleton-loader"></div>
       </div>
@@ -18,7 +18,7 @@ const StatCard = ({
   }
 
   return (
-    <div className={`stat-card ${className}`}>
+    <div className={`stat-card ${className}`} style={{ width: '100%', height: '100%' }}>
       <h3>{title}</h3>
       <div className="stat-value">
         {value}{unit}

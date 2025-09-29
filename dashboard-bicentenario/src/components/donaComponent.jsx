@@ -54,7 +54,7 @@ const DoughnutChart = ({
   };
 
   return (
-    <div className={`doughnut-chart ${className}`}>
+    <div className={`doughnut-chart ${className}`} style={{ width: '100%', height: '100%' }}>
       <Doughnut data={chartData} options={options} />
     </div>
   );
