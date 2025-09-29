@@ -75,7 +75,7 @@ const LineChart = ({
   };
 
   return (
-    <div className={`line-chart ${className}`}>
+    <div className={`line-chart ${className}`} style={{ width: '100%', height: '100%' }}>
       <Line data={chartData} options={options} />
     </div>
   );

@@ -24,10 +24,10 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  display: block; /* Cambiado de flex a block para evitar interferencias */
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--background-color, #242424);
 }
 
 h1 {
