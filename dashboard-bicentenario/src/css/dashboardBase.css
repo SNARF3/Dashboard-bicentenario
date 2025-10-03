@@ -56,14 +56,14 @@ body {
 
 .dashboard-row {
   display: flex;
-  flex-wrap: wrap;
+  
   gap: 1.5rem;
   justify-content: space-between;
 }
 
 .dashboard-row > .dashboard-block {
-  flex: 1 1 calc(50% - 1rem);
-  min-width: 300px;
+  flex: 1 1 0;
+  min-width: 0;
   box-sizing: border-box;
 }
 
@@ -87,6 +87,23 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.dashboard-app {
+    display: flex; /* Sidebar y dashboard-base lado a lado */
+    min-height: 100vh;
+    background-color: var(--background); /* El fondo general de la app */
+}
+
+.dashboard-base {
+    /* El contenido principal ocupa el espacio restante y es donde ocurre el scroll */
+    flex-grow: 1; 
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    overflow-y: auto; /* Permite el scroll vertical en el contenido */
+    overflow-x: hidden; /* Evita el scroll horizontal */
+    width: 100%; /* Ocupa el 100% del espacio restante de dashboard-app */
 }
 
 /* Bloques específicos */
@@ -156,17 +173,21 @@ body {
   margin-top: 10px;
 }
 
-/* CONTENEDORES DE GRÁFICOS MEJORADOS */
 .chart-container {
   flex: 1;
   min-height: 250px;
   position: relative;
-  background: var(--light-primary); /* CAMBIADO A BEIGE */
+  background: var(--light-primary);
   border-radius: 8px;
-  padding: 15px;
+  padding: 0px; /* Mantén el padding si deseas el espacio visual */
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(0, 0, 0, 0.1);
-  overflow: hidden; /* IMPORTANTE: Mantiene los gráficos dentro */
+  overflow: hidden;
+
+  /* SOLUCIÓN: Usar Flexbox para centrar el canvas dentro del padding */
+  display: flex; /* Habilitar flexbox */
+  justify-content: center; /* Centrar horizontalmente */
+  align-items: center; /* Centrar verticalmente */
 }
 
 /* Ajustes específicos para gráficos - LIMITAR TAMAÑO */
@@ -324,6 +345,105 @@ body {
   max-width: 100%;
 }
 
+
+/* ==================== SIDEBAR STYLES ==================== */
+.sidebar {
+    width: 250px; /* Ancho fijo para el menú */
+    min-width: 250px; /* Evita que se encoja */
+    background-color: var(--secondary); /* Fondo Azul oscuro */
+    color: var(--light-primary); /* Texto Beige claro */
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    padding-top: 20px;
+    height: 100vh; /* Ocupa la altura completa de la ventana */
+    position: sticky; /* Se mantiene fijo mientras el contenido se desplaza */
+    top: 0;
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Estilos de Botón Hamburguesa */
+.mobile-header {
+    display: none; /* Por defecto, oculto en escritorio */
+    align-items: center;
+    padding: 15px 20px;
+    background-color: var(--secondary); /* Fondo Azul oscuro */
+    color: var(--light-primary);
+}
+
+.menu-toggle {
+    background: none;
+    border: none;
+    color: var(--primary); /* Icono naranja */
+    cursor: pointer;
+    margin-right: 15px;
+    z-index: 1000;
+}
+
+.mobile-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 0;
+}
+
+
+.sidebar-header {
+    /* Usar Flexbox para alinear el título y el botón de cerrar (aunque esté oculto) */
+    display: flex;
+    justify-content: space-between; /* Espacio entre el logo y la X */
+    align-items: center;
+    padding: 0 20px 30px 20px;
+}
+
+.close-sidebar-btn {
+    /* Importante: Oculto por defecto en escritorio */
+    display: none; 
+}
+
+.sidebar-logo {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: var(--primary); /* Acento Naranja */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-nav {
+    flex-grow: 1;
+    padding: 0 10px;
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.8); /* Texto más claro que el fondo */
+    text-decoration: none;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.sidebar-item:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* Fondo sutil al pasar el mouse */
+    color: var(--light-primary);
+}
+
+.sidebar-item.active {
+    background-color: var(--primary); /* Opción activa con color Naranja */
+    color: var(--secondary); /* Texto oscuro para el fondo naranja */
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-icon {
+    font-size: 1.2em;
+    margin-right: 15px;
+}
+
+.sidebar-text {
+    flex-grow: 1;
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
   .dashboard-grid-4cols {
@@ -338,6 +458,8 @@ body {
   
   .dashboard-row > .dashboard-block {
     flex: 1 1 100%;
+    min-width: 0 !important;
+    width: 100%;
   }
   
   .kpi-grid {
@@ -355,6 +477,56 @@ body {
   .chart-container {
     min-height: 300px;
   }
+
+  /* 1. Muestra el botón de hamburguesa y el encabezado */
+    .mobile-header {
+        display: flex; 
+        position: sticky;
+        top: 0;
+        z-index: 99;
+    }
+
+    /* 2. Oculta el Sidebar por defecto, moviéndolo fuera de la pantalla */
+    .sidebar {
+        /* Deshabilita la posición sticky de escritorio */
+        position: fixed; 
+        height: 100vh;
+        z-index: 100; /* Asegura que esté sobre el contenido */
+        /* Mueve el sidebar completamente fuera de la vista */
+        transform: translateX(-100%); 
+        /* Asegura que el contenido no se desplace */
+        box-shadow: 4px 0 10px rgba(0, 0, 0, 0.5); 
+    }
+    
+    .close-sidebar-btn {
+        display: block; /* Ahora es visible */
+        background: none;
+        border: none;
+        color: var(--light-primary); /* Color claro para la X */
+        cursor: pointer;
+        padding: 0;
+        margin-left: 20px; /* Espacio entre el logo y la X */
+        /* Z-index no es tan importante aquí, pero no está de más */
+    }
+
+    .sidebar-logo {
+        flex-grow: 1; /* Permite que el logo tome el espacio restante */
+        text-align: left;
+    }
+
+    /* 3. Estado 'open': Mueve el Sidebar a la posición visible */
+    .sidebar.open {
+        transform: translateX(0);
+    }
+    
+    /* 4. El dashboard-base debe tener padding para el contenido y evitar el scroll horizontal */
+    .dashboard-base {
+        padding-top: 0; /* Ya tenemos el mobile-header sticky */
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+    }
+
 }
 
 @media (max-width: 768px) {
@@ -375,8 +547,9 @@ body {
   }
   
   .chart-container {
-    min-height: 250px;
-    padding: 12px;
+    min-width: 0 !important;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .dashboard-grid-4cols {
@@ -400,6 +573,7 @@ body {
   .map-container {
     min-height: 250px;
     max-height: 300px;
+    padding: 10px;
   }
 }
 
