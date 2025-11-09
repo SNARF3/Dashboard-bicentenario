@@ -1,0 +1,431 @@
+/* css/dashboardForUsers.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+.analytics-dashboard {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #F4E9D7 0%, #D9CBBF 50%, #BFAEA4 100%);
+  font-family: 'Inter', sans-serif;
+}
+
+.analytics-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.analytics-header {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(244, 233, 215, 0.8) 100%);
+  backdrop-filter: blur(10px);
+  padding: 2rem;
+  border-radius: 24px;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(7, 45, 66, 0.1);
+}
+
+.analytics-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #072D42 0%, #464E59 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+
+.analytics-subtitle {
+  color: #464E59;
+  font-size: 1.125rem;
+  font-weight: 400;
+}
+
+.filter-count {
+  color: #F29E38;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.analytics-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Panel de Filtros */
+.filters-sidebar {
+  position: sticky;
+  top: 2rem;
+}
+
+.filter-panel {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(244, 233, 215, 0.9) 100%);
+  backdrop-filter: blur(10px);
+  padding: 1.5rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px rgba(7, 45, 66, 0.1);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(242, 158, 56, 0.3);
+}
+
+.filter-header h3 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: #072D42;
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.active-filters {
+  background: #F29E38;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.clear-filters-btn {
+  background: transparent;
+  color: #464E59;
+  border: 1px solid #9298A6;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.clear-filters-btn:hover {
+  background: #F29E38;
+  color: white;
+  border-color: #F29E38;
+}
+
+.filter-group {
+  margin-bottom: 1.5rem;
+}
+
+.filter-group h4 {
+  color: #072D42;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.filter-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #464E59;
+  font-size: 0.875rem;
+}
+
+.filter-checkbox:hover {
+  background: rgba(242, 158, 56, 0.1);
+}
+
+.filter-checkbox input {
+  display: none;
+}
+
+.checkmark {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #9298A6;
+  border-radius: 4px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.filter-checkbox input:checked + .checkmark {
+  background: #F29E38;
+  border-color: #F29E38;
+}
+
+.filter-checkbox input:checked + .checkmark::after {
+  content: '✓';
+  position: absolute;
+  color: white;
+  font-size: 12px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Contenido Principal */
+.analytics-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.analytics-section {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(244, 233, 215, 0.9) 100%);
+  backdrop-filter: blur(10px);
+  padding: 2rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px rgba(7, 45, 66, 0.1);
+}
+
+/* KPI Grid */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.kpi-card {
+  background: linear-gradient(135deg, #FFFFFF 0%, #F8F4ED 100%);
+  padding: 1.5rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 20px rgba(7, 45, 66, 0.08);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #F29E38, #072D42);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.kpi-card:hover::before {
+  opacity: 1;
+}
+
+.kpi-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(7, 45, 66, 0.12);
+}
+
+.kpi-card.highlight {
+  background: linear-gradient(135deg, #072D42 0%, #464E59 100%);
+  color: white;
+}
+
+.kpi-card.highlight .kpi-value {
+  color: #F4E9D7;
+}
+
+.kpi-card.highlight .kpi-subtext {
+  color: rgba(244, 233, 215, 0.8);
+}
+
+.kpi-card.no-data {
+  background: linear-gradient(135deg, #F8F4ED 0%, #E8E2D6 100%);
+  color: #9298A6;
+  grid-column: 1 / -1;
+  text-align: center;
+}
+
+.kpi-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.kpi-content h3 {
+  font-size: 0.875rem;
+  color: #464E59;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.kpi-value {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #072D42;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.kpi-subtext {
+  font-size: 0.75rem;
+  color: #9298A6;
+  font-weight: 500;
+}
+
+/* Charts Grid */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.chart-block {
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.chart-block.full-width {
+  grid-column: 1 / -1;
+}
+
+.chart-container {
+  position: relative;
+  height: 300px;
+  width: 100%;
+}
+
+.no-data-chart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #9298A6;
+}
+
+.no-data-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .analytics-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .filters-sidebar {
+    position: static;
+  }
+  
+  .filter-panel {
+    max-height: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .analytics-container {
+    padding: 1rem;
+  }
+  
+  .analytics-title {
+    font-size: 2rem;
+  }
+  
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+  
+  .filter-panel {
+    padding: 1rem;
+  }
+}
+
+/* Scrollbar personalizado */
+.filter-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.filter-panel::-webkit-scrollbar-track {
+  background: rgba(217, 203, 191, 0.3);
+  border-radius: 3px;
+}
+
+.filter-panel::-webkit-scrollbar-thumb {
+  background: #F29E38;
+  border-radius: 3px;
+}
+
+.filter-panel::-webkit-scrollbar-thumb:hover {
+  background: #072D42;
+}
+/* Agregar al archivo dashboardForUsers.css */
+
+/* Estilos para los nuevos gráficos */
+.chart-block.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Leyenda para el mapa de calor */
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #464E59;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+/* Responsive para múltiples gráficos */
+@media (max-width: 1200px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .chart-block.full-width {
+    grid-column: 1;
+  }
+}
+
+/* Mejoras visuales para gráficos específicos */
+.no-data-chart .no-data-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.6;
+}
