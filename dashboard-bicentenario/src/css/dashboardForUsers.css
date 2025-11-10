@@ -814,11 +814,25 @@
 
 /* Estados de error */
 .error-state {
+  max-width: 900px;           /* limitar ancho para centrar mejor */
+  margin: 2rem auto;          /* centrado horizontal */
   text-align: center;
   padding: 4rem 2rem;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 16px;
-  margin: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px rgba(7,45,66,0.06);
+}
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 768px) {
+  .error-state {
+    margin: 1rem;
+    padding: 2rem 1rem;
+    width: auto;
+  }
 }
 
 .error-icon {

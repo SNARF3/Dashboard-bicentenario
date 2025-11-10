@@ -18,16 +18,16 @@ const Sidebar = () => {
       </div>
       <nav className="sidebar-nav">
         <Link 
-          to="/dashboard" 
-          className={`nav-link ${isActive('/dashboard') ? 'active' : ''}`}
+          to="/Dashboard-bicentenario/" 
+          className={`nav-link ${isActive('/Dashboard-bicentenario/') ? 'active' : ''}`}
         >
           <Icon name="home" className="nav-icon" />
           <span>Inicio</span>
         </Link>
         
         <Link 
-          to="/analytics" 
-          className={`nav-link ${isActive('/analytics') ? 'active' : ''}`}
+          to="/Dashboard-Users/" 
+          className={`nav-link ${isActive('/Dashboard-Users/') ? 'active' : ''}`}
         >
           <Icon name="statistics" className="nav-icon" />
           <span>Analytics</span>

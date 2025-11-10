@@ -16,7 +16,7 @@ function App() {
           <Route path="/Dashboard-bicentenario/" element={<DashboardBase />} />
           
           {/* Dashboard para usuarios (vista de analytics) */}
-          <Route path="/analytics" element={<DashboardForUsers />} />
+          <Route path="/Dashboard-Users/" element={<DashboardForUsers />} />
           
           {/* Ruta de fallback */}
           <Route path="*" element={<Navigate to="/Dashboard-bicentenario" replace />} />
