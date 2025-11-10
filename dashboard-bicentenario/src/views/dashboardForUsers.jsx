@@ -991,14 +991,24 @@ const ODSDistributionChart = ({ filteredData }) => {
   );
 };
 
-// Pequeña pantalla de carga (mientras loadDataFromAPI responde)
 const SmallLoading = () => (
-  <div className="loading-overlay">
-    <div className="loading-box">
-      <div className="spinner" />
-      <div style={{ marginTop: 12, textAlign: 'center' }}>
-        <strong>🔄 Cargando datos...</strong>
-        <div style={{ fontSize: 13, color: '#666' }}>Un momento, estamos obteniendo la información</div>
+  <div className="loading-screen">
+    <div className="loading-content">
+      <div className="loading-animation">
+        <div className="loading-spinner-large"></div>
+        <div className="loading-pulse"></div>
+      </div>
+
+      <div className="loading-text">
+        <h2>🔄 Cargando Dashboard Empresarial</h2>
+        <p>Estamos preparando todos los datos y gráficos...</p>
+
+        <div className="loading-steps">
+          <div className="loading-step active">📊 Conectando con la base de datos</div>
+          <div className="loading-step">📈 Procesando información empresarial</div>
+          <div className="loading-step">🎯 Configurando análisis ODS</div>
+          <div className="loading-step">🌎 Cargando datos internacionales</div>
+        </div>
       </div>
     </div>
   </div>
