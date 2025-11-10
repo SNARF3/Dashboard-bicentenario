@@ -35,3 +35,8 @@ export const empresasPorDepartamento = async () => {
   const response = await api.get("/empresas-departamento");
   return response.data;
 };
+
+export const hitosPorAnio = async () => {
+  const response = await api.get("/total-hitos-anio");
+  return response.data;
+};

@@ -59,6 +59,10 @@ const DashboardBase = () => {
               />
             </div>
           </div>
+          </div>
+
+          {/* Fila 4: Gráficos de dona */}
+          <div className="dashboard-row chart-grid">
             <div className="dashboard-block">
               <h2 className="block-title">
                 <Icon name="sustainability" />
@@ -69,9 +73,21 @@ const DashboardBase = () => {
                 title="Compromiso con los ODS" 
               />
             </div>
+            <div className="dashboard-block">
+              <h2 className="block-title">
+                <Icon name="factory" />
+                Hitos empresariales por Año
+              </h2>
+                <LineChart 
+                  title="Evolución de Hitos por Año"
+                  xAxisLabel="Años"
+                  yAxisLabel="Cantidad de Hitos"
+                  chartType="hitos"
+                />
+            </div>
           </div>
 
-          {/* Fila 4: Gráficos de dona */}
+          {/* Fila 5: Gráficos de dona */}
           <div className="dashboard-row chart-grid">
             <div className="dashboard-block">
               <h2 className="block-title">
@@ -86,16 +102,14 @@ const DashboardBase = () => {
             </div>
           </div>
 
-          {/* Fila 5: Mapa */}
+          {/* Fila 6: Mapa */}
           <div className="dashboard-row">
             <div className="dashboard-block">
               <h2 className="block-title">
                 <Icon name="map" />
-                Distribución Geográfica
+                Empresas por Departamento
               </h2>
-              <BoliviaMap 
-                title="Cantidad de Empresas por Departamento" 
-              />
+              <BoliviaMap/>
             </div>
           </div>
         </div>
