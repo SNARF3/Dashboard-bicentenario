@@ -10,7 +10,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { empresasPorAnio } from '../../services/dashboardBaseService';
+import { empresasPorAnio, hitosPorAnio } from '../../services/dashboardBaseService';
 import '../../css/dashboardBase.css';
 
 // Registrar elementos de Chart.js
@@ -26,9 +26,11 @@ ChartJS.register(
 );
 
 const LineChart = ({ 
-  title = "Evolución de Empresas por Año", 
+  title = "Evolución Temporal",
   xAxisLabel = "Años", 
-  yAxisLabel = "Cantidad de Empresas" 
+  yAxisLabel = "Cantidad",
+  chartType = "empresas", // "empresas" o "hitos"
+  colorScheme = "primary" // "primary" o "secondary"
 }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
@@ -36,19 +38,50 @@ const LineChart = ({
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
 
+  // Configuración de colores según el tipo
+  const getColorConfig = () => {
+    if (chartType === "hitos") {
+      return {
+        borderColor: '#072D42', // Azul oscuro para hitos
+        backgroundColor: 'rgba(7, 45, 66, 0.1)',
+        pointBackgroundColor: '#F29E38',
+        pointHoverBackgroundColor: '#072D42',
+        gradientStart: 'rgba(7, 45, 66, 0.8)',
+        gradientEnd: 'rgba(7, 45, 66, 0.1)'
+      };
+    }
+    
+    // Default para empresas
+    return {
+      borderColor: '#F29E38', // Naranja para empresas
+      backgroundColor: 'rgba(242, 158, 56, 0.1)',
+      pointBackgroundColor: '#072D42',
+      pointHoverBackgroundColor: '#F29E38',
+      gradientStart: 'rgba(242, 158, 56, 0.8)',
+      gradientEnd: 'rgba(242, 158, 56, 0.1)'
+    };
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await empresasPorAnio(1825, 2025);
+        let response;
         
-        // El endpoint devuelve { "empresasAnio": [...] }
-        const empresasData = response.empresasAnio || [];
-        
-        // Ordenar los datos por año
-        const sortedData = empresasData.sort((a, b) => a.anio - b.anio);
-        
-        setData(sortedData);
+        if (chartType === "hitos") {
+          response = await hitosPorAnio();
+          // Procesar datos de hitos, excluyendo el año 0
+          const hitosData = response.hitos || [];
+          const filteredData = hitosData.filter(item => item.anio !== 0);
+          const sortedData = filteredData.sort((a, b) => a.anio - b.anio);
+          setData(sortedData);
+        } else {
+          // Default: empresas
+          response = await empresasPorAnio(1825, 2025);
+          const empresasData = response.empresasAnio || [];
+          const sortedData = empresasData.sort((a, b) => a.anio - b.anio);
+          setData(sortedData);
+        }
       } catch (error) {
         console.error('Error al obtener datos de timeline:', error);
         setError('Error al cargar datos del gráfico');
@@ -59,7 +92,7 @@ const LineChart = ({
     };
 
     fetchData();
-  }, []);
+  }, [chartType]);
 
   useEffect(() => {
     if (chartRef.current && data.length > 0 && !loading) {
@@ -74,10 +107,13 @@ const LineChart = ({
       const labels = data.map(item => item.anio.toString());
       const values = data.map(item => item.total);
 
+      // Configuración de colores
+      const colors = getColorConfig();
+
       // Crear gradiente para la línea
       const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-      gradient.addColorStop(0, 'rgba(242, 158, 56, 0.8)');
-      gradient.addColorStop(1, 'rgba(242, 158, 56, 0.1)');
+      gradient.addColorStop(0, colors.gradientStart);
+      gradient.addColorStop(1, colors.gradientEnd);
 
       try {
         chartInstance.current = new ChartJS(ctx, {
@@ -86,19 +122,19 @@ const LineChart = ({
             labels: labels,
             datasets: [
               {
-                label: 'Empresas Creadas',
+                label: chartType === "hitos" ? 'Hitos por Año' : 'Empresas Creadas',
                 data: values,
-                borderColor: '#F29E38',
+                borderColor: colors.borderColor,
                 backgroundColor: gradient,
                 borderWidth: 4,
                 tension: 0.4,
                 fill: true,
-                pointBackgroundColor: '#072D42',
+                pointBackgroundColor: colors.pointBackgroundColor,
                 pointBorderColor: '#FFFFFF',
                 pointBorderWidth: 3,
                 pointRadius: 6,
                 pointHoverRadius: 10,
-                pointHoverBackgroundColor: '#F29E38',
+                pointHoverBackgroundColor: colors.pointHoverBackgroundColor,
                 pointHoverBorderColor: '#FFFFFF',
                 pointHoverBorderWidth: 3,
               },
@@ -143,7 +179,7 @@ const LineChart = ({
                 backgroundColor: 'rgba(7, 45, 66, 0.95)',
                 titleColor: '#F4E9D7',
                 bodyColor: '#F4E9D7',
-                borderColor: '#F29E38',
+                borderColor: colors.borderColor,
                 borderWidth: 2,
                 cornerRadius: 8,
                 displayColors: true,
@@ -153,11 +189,12 @@ const LineChart = ({
                     return `Año: ${context[0].label}`;
                   },
                   label: (context) => {
-                    return `Empresas: ${context.parsed.y}`;
+                    const labelText = chartType === "hitos" ? 'Hitos' : 'Empresas';
+                    return `${labelText}: ${context.parsed.y}`;
                   },
                   afterLabel: (context) => {
-                    const totalEmpresas = data.reduce((sum, item) => sum + item.total, 0);
-                    const porcentaje = ((context.parsed.y / totalEmpresas) * 100).toFixed(1);
+                    const total = data.reduce((sum, item) => sum + item.total, 0);
+                    const porcentaje = ((context.parsed.y / total) * 100).toFixed(1);
                     return `Porcentaje: ${porcentaje}%`;
                   }
                 },
@@ -256,27 +293,27 @@ const LineChart = ({
         chartInstance.current.destroy();
       }
     };
-  }, [data, loading, title, xAxisLabel, yAxisLabel]);
+  }, [data, loading, title, xAxisLabel, yAxisLabel, chartType]);
 
   // Calcular estadísticas para mostrar
   const stats = React.useMemo(() => {
     if (data.length === 0) return null;
     
-    const totalEmpresas = data.reduce((sum, item) => sum + item.total, 0);
-    const añosConEmpresas = data.length;
+    const total = data.reduce((sum, item) => sum + item.total, 0);
+    const añosConDatos = data.length;
     const añoMasAntiguo = Math.min(...data.map(item => item.anio));
     const añoMasReciente = Math.max(...data.map(item => item.anio));
-    const añoConMasEmpresas = data.reduce((max, item) => 
+    const añoConMasDatos = data.reduce((max, item) => 
       item.total > max.total ? item : max, data[0]
     );
 
     return {
-      totalEmpresas,
-      añosConEmpresas,
+      total,
+      añosConDatos,
       añoMasAntiguo,
       añoMasReciente,
-      añoConMasEmpresas: añoConMasEmpresas.anio,
-      maxEmpresas: añoConMasEmpresas.total
+      añoConMasDatos: añoConMasDatos.anio,
+      maxDatos: añoConMasDatos.total
     };
   }, [data]);
 
@@ -310,7 +347,7 @@ const LineChart = ({
       <div className="chart-empty-container">
         <div className="empty-icon">📊</div>
         <h3>No hay datos disponibles</h3>
-        <p>No se encontraron datos de empresas para el período seleccionado.</p>
+        <p>No se encontraron datos para el período seleccionado.</p>
       </div>
     );
   }
@@ -321,8 +358,10 @@ const LineChart = ({
       {stats && (
         <div className="chart-stats">
           <div className="stat-item">
-            <span className="stat-label">Total Empresas:</span>
-            <span className="stat-value">{stats.totalEmpresas}</span>
+            <span className="stat-label">
+              {chartType === "hitos" ? "Total Hitos:" : "Total Empresas:"}
+            </span>
+            <span className="stat-value">{stats.total}</span>
           </div>
           <div className="stat-item">
             <span className="stat-label">Período:</span>
@@ -330,11 +369,13 @@ const LineChart = ({
           </div>
           <div className="stat-item">
             <span className="stat-label">Años con datos:</span>
-            <span className="stat-value">{stats.añosConEmpresas}</span>
+            <span className="stat-value">{stats.añosConDatos}</span>
           </div>
           <div className="stat-item highlight">
             <span className="stat-label">Año pico:</span>
-            <span className="stat-value">{stats.añoConMasEmpresas} ({stats.maxEmpresas} empresas)</span>
+            <span className="stat-value">
+              {stats.añoConMasDatos} ({stats.maxDatos} {chartType === "hitos" ? "hitos" : "empresas"})
+            </span>
           </div>
         </div>
       )}
@@ -343,7 +384,6 @@ const LineChart = ({
       <div className="chart-wrapper">
         <canvas ref={chartRef} />
       </div>
-      
     </div>
   );
 };

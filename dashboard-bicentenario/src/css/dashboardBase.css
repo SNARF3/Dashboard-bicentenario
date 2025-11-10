@@ -658,83 +658,143 @@
 }
 
 /* Estilos específicos para DoughnutChart */
+/* Estilos específicos para DoughnutChart - SIGUIENDO LINECHART */
 .doughnut-chart-container {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(244, 233, 215, 0.9) 100%);
   border-radius: 16px;
   padding: 1.5rem;
   border: 1px solid rgba(255, 255, 255, 0.6);
   box-shadow: 0 8px 32px rgba(7, 45, 66, 0.1);
+  /* Sin altura fija - se ajusta al contenido como LineChart */
 }
 
-.doughnut-wrapper {
-  position: relative;
-  height: 250px;
-  width: 100%;
-  margin: 1rem 0;
-}
-
-.doughnut-stats {
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 12px;
-  padding: 1rem;
+.doughnut-header {
+  text-align: center;
   margin-bottom: 1rem;
+}
+
+.doughnut-header h3 {
+  color: #072D42;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Usar el mismo grid de stats que LineChart */
+.doughnut-chart-container .chart-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.doughnut-chart-container .stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 8px;
   border: 1px solid rgba(217, 203, 191, 0.5);
 }
 
-.stat-total {
-  text-align: center;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(217, 203, 191, 0.3);
+.doughnut-chart-container .stat-item.highlight {
+  background: linear-gradient(135deg, rgba(242, 158, 56, 0.1) 0%, rgba(255, 255, 255, 0.8) 100%);
+  border-color: rgba(242, 158, 56, 0.3);
 }
 
-.stat-label {
-  font-size: 0.875rem;
+.doughnut-chart-container .stat-label {
+  font-size: 0.75rem;
   color: #464E59;
   font-weight: 600;
-  margin-right: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
 }
 
-.stat-value {
-  font-size: 1.25rem;
+.doughnut-chart-container .stat-value {
+  font-size: 1rem;
   color: #072D42;
   font-weight: 700;
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-.stat-breakdown {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+/* Contenedor del gráfico con altura fija como LineChart */
+.doughnut-chart-wrapper {
+  position: relative;
+  height: 250px; /* Altura fija similar a LineChart pero más compacta */
+  width: 100%;
+  margin: 1rem 0;
 }
 
-.breakdown-item {
+.doughnut-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.center-value {
+  display: block;
+  color: #072D42;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.center-label {
+  display: block;
+  color: #072D42;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  opacity: 0.8;
+  margin-top: 0.25rem;
+}
+
+.doughnut-legend {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+}
+
+.doughnut-legend .legend-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
-}
-
-.color-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 2px solid white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.breakdown-label {
   color: #464E59;
-  font-weight: 500;
-  flex: 1;
 }
 
-.breakdown-value {
-  color: #072D42;
-  font-weight: 600;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+.doughnut-legend .legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
+.doughnut-legend .legend-color.con {
+  background-color: #F29E38;
+}
+
+.doughnut-legend .legend-color.sin {
+  background-color: #072D42;
+}
+
+/* Estados - igual que LineChart */
 .doughnut-loading,
 .doughnut-error,
 .doughnut-empty {
@@ -751,11 +811,16 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .doughnut-wrapper {
-    height: 200px;
+  .doughnut-chart-container .chart-stats {
+    grid-template-columns: 1fr;
   }
   
-  .stat-breakdown {
+  .doughnut-legend {
     flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .doughnut-chart-wrapper {
+    height: 200px;
   }
 }

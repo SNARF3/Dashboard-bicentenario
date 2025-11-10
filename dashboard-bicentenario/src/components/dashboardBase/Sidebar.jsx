@@ -1,32 +1,41 @@
 // components/dashboard/Sidebar.jsx
 import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import Icon from './Icon';
 import '../../css/dashboardBase.css';
 
-const Sidebar = () => (
-  <div className="dashboard-sidebar">
-    <div className="sidebar-header">
-      <h1 className="sidebar-title">Bicentenario Analytics</h1>
+const Sidebar = () => {
+  const location = useLocation();
+
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+
+  return (
+    <div className="dashboard-sidebar">
+      <div className="sidebar-header">
+        <h1 className="sidebar-title">Bicentenario Analytics</h1>
+      </div>
+      <nav className="sidebar-nav">
+        <Link 
+          to="/dashboard" 
+          className={`nav-link ${isActive('/dashboard') ? 'active' : ''}`}
+        >
+          <Icon name="home" className="nav-icon" />
+          <span>Inicio</span>
+        </Link>
+        
+        <Link 
+          to="/analytics" 
+          className={`nav-link ${isActive('/analytics') ? 'active' : ''}`}
+        >
+          <Icon name="statistics" className="nav-icon" />
+          <span>Analytics</span>
+        </Link>
+      
+      </nav>
     </div>
-    <nav className="sidebar-nav">
-      <a href="#" className="nav-link active">
-        <Icon name="home" className="nav-icon" />
-        <span>Inicio</span>
-      </a>
-      <a href="#" className="nav-link">
-        <Icon name="statistics" className="nav-icon" />
-        <span>Estadísticas</span>
-      </a>
-      <a href="#" className="nav-link">
-        <Icon name="report" className="nav-icon" />
-        <span>Reportes</span>
-      </a>
-      <a href="#" className="nav-link">
-        <Icon name="settings" className="nav-icon" />
-        <span>Configuración</span>
-      </a>
-    </nav>
-  </div>
-);
+  );
+};
 
 export default Sidebar;

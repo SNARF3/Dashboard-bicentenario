@@ -26,7 +26,7 @@ const departmentNameMapping = {
 };
 
 const BoliviaMap = ({
-  title = "Cantidad de empresas por departamento",
+  title = "",
   width = 600,
   height = 500,
   className = "",

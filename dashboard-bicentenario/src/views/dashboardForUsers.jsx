@@ -18,8 +18,13 @@ import {
   RadialLinearScale,
   RadarController
 } from 'chart.js';
-import datos from '../assets/empresas_50_estructura.json';
 import '../css/dashboardForUsers.css';
+
+// nuevo: servicio de carga/caché con reintentos
+import { loadDataFromAPI, clearDatamartCache } from '../services/damartService';
+
+// (opcional) mantenemos el JSON como fallback en desarrollo, pero no se usa por defecto
+import datosFallback from '../assets/empresas_50_estructura.json';
 
 // Registrar todos los elementos necesarios de Chart.js
 ChartJS.register(
@@ -41,7 +46,7 @@ ChartJS.register(
 );
 
 // Componente de Filtros
-const FilterPanel = ({ filters, onFilterChange, data }) => {
+const FilterPanel = ({ filters, onFilterChange, data, isVisible, onClose }) => {
   const [localFilters, setLocalFilters] = useState(filters);
 
   const uniqueValues = useMemo(() => {
@@ -85,38 +90,52 @@ const FilterPanel = ({ filters, onFilterChange, data }) => {
     count + filterArray.length, 0
   );
 
-  return (
-    <div className="filter-panel">
-      <div className="filter-header">
-        <h3>🔍 Filtros Avanzados</h3>
-        <div className="filter-controls">
-          <span className="active-filters">{activeFiltersCount} activos</span>
-          <button onClick={clearFilters} className="clear-filters-btn">
-            Limpiar Todo
-          </button>
-        </div>
-      </div>
+  if (!isVisible) return null;
 
-      {Object.entries(uniqueValues).map(([key, values]) => (
-        <div key={key} className="filter-group">
-          <h4>{getFilterTitle(key)}</h4>
-          <div className="filter-options">
-            {values.map(value => (
-              <label key={value} className="filter-checkbox">
-                <input
-                  type="checkbox"
-                  checked={localFilters[key].includes(value)}
-                  onChange={() => handleFilterChange(key, value)}
-                />
-                <span className="checkmark"></span>
-                {value}
-              </label>
-            ))}
-          </div>
+  return (
+    <div className="filter-panel-overlay" onClick={onClose}>
+        <div className="filter-panel" onClick={(e) => e.stopPropagation()}>
+        <div className="filter-header">
+            <div className="filter-title">
+            <h3>🎛️ Filtros Avanzados</h3>
+            <p>Selecciona los criterios para filtrar los datos</p>
+            </div>
+            <div className="filter-controls">
+            <div className="filter-stats">
+                <span className="active-filters">{activeFiltersCount} filtros activos</span>
+                <button onClick={clearFilters} className="clear-filters-btn">
+                🗑️ Limpiar Todo
+                </button>
+            </div>
+            <button onClick={onClose} className="close-filters-btn">
+                ✕ Cerrar
+            </button>
+            </div>
         </div>
-      ))}
+
+        <div className="filter-content">
+            {Object.entries(uniqueValues).map(([key, values]) => (
+            <div key={key} className="filter-group">
+                <h4>{getFilterTitle(key)}</h4>
+                <div className="filter-options">
+                {values.map(value => (
+                    <label key={value} className="filter-checkbox">
+                    <input
+                        type="checkbox"
+                        checked={localFilters[key].includes(value)}
+                        onChange={() => handleFilterChange(key, value)}
+                    />
+                    <span className="checkmark"></span>
+                    {value}
+                    </label>
+                ))}
+                </div>
+            </div>
+            ))}
+        </div>
+        </div>
     </div>
-  );
+    );
 };
 
 const getFilterTitle = (filterKey) => {
@@ -246,7 +265,7 @@ const KPICards = ({ filteredData }) => {
       <div className="kpi-card">
         <div className="kpi-icon">📅</div>
         <div className="kpi-content">
-          <h3>Antigüedad Prom.</h3>
+          <h3>Antigüedad Promedio</h3>
           <div className="kpi-value">{kpis.antiguedadPromedio} años</div>
           <div className="kpi-subtext">Experiencia acumulada</div>
         </div>
@@ -337,7 +356,7 @@ const RubroChart = ({ filteredData }) => {
               color: '#072D42',
               font: {
                 family: 'Plus Jakarta Sans',
-                size: 16,
+                size: 18,
                 weight: '600'
               }
             },
@@ -351,13 +370,21 @@ const RubroChart = ({ filteredData }) => {
             y: {
               beginAtZero: true,
               ticks: {
-                precision: 0
+                precision: 0,
+                font: {
+                  size: 12
+                }
               },
               grid: {
                 color: 'rgba(70, 78, 89, 0.1)'
               }
             },
             x: {
+              ticks: {
+                font: {
+                  size: 11
+                }
+              },
               grid: {
                 color: 'rgba(70, 78, 89, 0.1)'
               }
@@ -386,7 +413,7 @@ const RubroChart = ({ filteredData }) => {
   }
 
   return (
-    <div className="chart-container">
+    <div className="chart-container large-chart">
       <canvas ref={chartRef} />
     </div>
   );
@@ -398,28 +425,36 @@ const ODSBySizeChart = ({ filteredData }) => {
   const chartInstance = React.useRef(null);
 
   const data = useMemo(() => {
-    const tamanos = ['Micro', 'Pequeña', 'Mediana', 'Grande'];
+    // Obtener todos los tamaños únicos del JSON
+    const uniqueTamanos = [...new Set(filteredData.empresas.map(e => e.tamanioEmpresa))];
+    
+    // Crear objeto con los resultados
     const result = {};
-
-    tamanos.forEach(tamano => {
-      const empresasTamano = filteredData.empresas.filter(e => e.tamanoEmpresa === tamano);
+    
+    uniqueTamanos.forEach(tamano => {
+      // Filtrar empresas por tamaño
+      const empresasTamano = filteredData.empresas.filter(e => e.tamanioEmpresa === tamano);
+      
       result[tamano] = {
         total: empresasTamano.length,
-        conODS: empresasTamano.filter(e => e.ods.length > 0).length
+        conODS: empresasTamano.filter(e => e.ods && e.ods.length > 0).length
       };
     });
 
+    // Ordenar tamaños por total de empresas (opcional)
+    const sortedTamanos = uniqueTamanos.sort((a, b) => result[b].total - result[a].total);
+
     return {
-      labels: tamanos,
+      labels: sortedTamanos,
       datasets: [
         {
           label: 'Con ODS',
-          data: tamanos.map(t => result[t].conODS),
+          data: sortedTamanos.map(t => result[t].conODS),
           backgroundColor: '#F29E38'
         },
         {
           label: 'Sin ODS',
-          data: tamanos.map(t => result[t].total - result[t].conODS),
+          data: sortedTamanos.map(t => result[t].total - result[t].conODS),
           backgroundColor: '#464E59'
         }
       ]
@@ -447,7 +482,7 @@ const ODSBySizeChart = ({ filteredData }) => {
               color: '#072D42',
               font: {
                 family: 'Plus Jakarta Sans',
-                size: 16,
+                size: 18,
                 weight: '600'
               }
             },
@@ -455,11 +490,30 @@ const ODSBySizeChart = ({ filteredData }) => {
               backgroundColor: 'rgba(7, 45, 66, 0.95)',
               titleColor: '#F4E9D7',
               bodyColor: '#F4E9D7',
+              callbacks: {
+                label: (context) => {
+                  const datasetLabel = context.dataset.label;
+                  const value = context.parsed.y;
+                  const total = data.datasets[0].data[context.dataIndex] + 
+                              data.datasets[1].data[context.dataIndex];
+                  const percentage = ((value / total) * 100).toFixed(1);
+                  return `${datasetLabel}: ${value} (${percentage}%)`;
+                }
+              }
+            },
+            legend: {
+              display: true,
+              position: 'top'
             }
           },
           scales: {
             x: {
               stacked: true,
+              ticks: {
+                font: {
+                  size: 12
+                }
+              },
               grid: {
                 color: 'rgba(70, 78, 89, 0.1)'
               }
@@ -468,7 +522,10 @@ const ODSBySizeChart = ({ filteredData }) => {
               stacked: true,
               beginAtZero: true,
               ticks: {
-                precision: 0
+                precision: 0,
+                font: {
+                  size: 12
+                }
               },
               grid: {
                 color: 'rgba(70, 78, 89, 0.1)'
@@ -486,7 +543,8 @@ const ODSBySizeChart = ({ filteredData }) => {
     };
   }, [data]);
 
-  if (data.labels.length === 0) {
+  // Validación de datos
+  if (!filteredData.empresas || filteredData.empresas.length === 0) {
     return (
       <div className="chart-container">
         <div className="no-data-chart">
@@ -498,7 +556,7 @@ const ODSBySizeChart = ({ filteredData }) => {
   }
 
   return (
-    <div className="chart-container">
+    <div className="chart-container large-chart">
       <canvas ref={chartRef} />
     </div>
   );
@@ -510,18 +568,27 @@ const TimelineChart = ({ filteredData }) => {
   const chartInstance = React.useRef(null);
 
   const data = useMemo(() => {
+    // Contar empresas por año específico
     const empresasPorAño = filteredData.empresas.reduce((acc, empresa) => {
-      const año = new Date(empresa.fechaFundacion).getFullYear();
-      const decada = Math.floor(año / 10) * 10;
-      acc[decada] = (acc[decada] || 0) + 1;
+      // Verificar que la fecha de fundación sea válida
+      if (empresa.fechaFundacion) {
+        const fecha = new Date(empresa.fechaFundacion);
+        if (!isNaN(fecha.getTime())) {
+          const año = fecha.getFullYear();
+          acc[año] = (acc[año] || 0) + 1;
+        }
+      }
       return acc;
     }, {});
 
-    // Ordenar por década
-    const sortedEntries = Object.entries(empresasPorAño).sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
+    console.log('Empresas por año:', empresasPorAño); // Para debug
+
+    // Ordenar por año (de más antiguo a más reciente)
+    const sortedEntries = Object.entries(empresasPorAño)
+      .sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
 
     return {
-      labels: sortedEntries.map(([decada]) => `${decada}s`),
+      labels: sortedEntries.map(([año]) => año),
       datasets: [
         {
           label: 'Empresas Fundadas',
@@ -529,8 +596,13 @@ const TimelineChart = ({ filteredData }) => {
           borderColor: '#F29E38',
           backgroundColor: 'rgba(242, 158, 56, 0.1)',
           borderWidth: 3,
-          tension: 0.4,
-          fill: true
+          tension: 0.3,
+          fill: true,
+          pointBackgroundColor: '#072D42',
+          pointBorderColor: '#FFFFFF',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6
         }
       ]
     };
@@ -553,11 +625,11 @@ const TimelineChart = ({ filteredData }) => {
           plugins: {
             title: {
               display: true,
-              text: 'Evolución de Creación de Empresas',
+              text: 'Evolución de Creación de Empresas por Año',
               color: '#072D42',
               font: {
                 family: 'Plus Jakarta Sans',
-                size: 16,
+                size: 18,
                 weight: '600'
               }
             },
@@ -565,22 +637,85 @@ const TimelineChart = ({ filteredData }) => {
               backgroundColor: 'rgba(7, 45, 66, 0.95)',
               titleColor: '#F4E9D7',
               bodyColor: '#F4E9D7',
+              callbacks: {
+                title: (context) => {
+                  return `Año ${context[0].label}`;
+                },
+                label: (context) => {
+                  return `${context.dataset.label}: ${context.parsed.y}`;
+                }
+              }
+            },
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                color: '#072D42',
+                font: {
+                  size: 12,
+                  weight: '600'
+                }
+              }
             }
           },
           scales: {
             y: {
               beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Cantidad de Empresas',
+                color: '#072D42',
+                font: {
+                  size: 12,
+                  weight: '600'
+                }
+              },
               ticks: {
-                precision: 0
+                precision: 0,
+                font: {
+                  size: 11
+                }
               },
               grid: {
                 color: 'rgba(70, 78, 89, 0.1)'
               }
             },
             x: {
+              title: {
+                display: true,
+                text: 'Año de Fundación',
+                color: '#072D42',
+                font: {
+                  size: 12,
+                  weight: '600'
+                }
+              },
+              ticks: {
+                font: {
+                  size: 10, // Tamaño más pequeño para muchos años
+                },
+                maxRotation: 90, // Rotación vertical si hay muchos años
+                minRotation: 90,
+                callback: function(value, index, values) {
+                  // Mostrar solo algunos años si hay muchos para evitar saturación
+                  if (values.length > 20) {
+                    return index % Math.ceil(values.length / 15) === 0 ? this.getLabelForValue(value) : '';
+                  }
+                  return this.getLabelForValue(value);
+                }
+              },
               grid: {
                 color: 'rgba(70, 78, 89, 0.1)'
               }
+            }
+          },
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          },
+          elements: {
+            line: {
+              tension: 0.3
             }
           }
         }
@@ -606,15 +741,13 @@ const TimelineChart = ({ filteredData }) => {
   }
 
   return (
-    <div className="chart-container">
+    <div className="chart-container extra-large-chart">
       <canvas ref={chartRef} />
     </div>
   );
 };
 
-
-
-// NUEVO: Gráfico de Radar - Perfil Empresarial Promedio
+// Gráfico de Radar - Perfil Empresarial Promedio
 const RadarChart = ({ filteredData }) => {
   const chartRef = React.useRef(null);
   const chartInstance = React.useRef(null);
@@ -630,11 +763,11 @@ const RadarChart = ({ filteredData }) => {
       'Sostenibilidad': (empresas.filter(e => e.sostenibilidad).length / total) * 100,
       'Impacto Social': (empresas.filter(e => e.impactoSocial).length / total) * 100,
       'Compromiso ODS': (empresas.filter(e => e.ods.length > 0).length / total) * 100,
-      'Presencia Nacional': (empresas.reduce((sum, e) => sum + e.sedes.length, 0) / total) * 20, // Normalizado
+      'Presencia Nacional': (empresas.reduce((sum, e) => sum + e.sedes.length, 0) / total) * 20,
       'Antigüedad': (empresas.reduce((sum, e) => {
         const años = new Date().getFullYear() - new Date(e.fechaFundacion).getFullYear();
-        return sum + Math.min(años, 50); // Cap at 50 años
-      }, 0) / total) * 2 // Normalizado
+        return sum + Math.min(años, 50);
+      }, 0) / total) * 2
     };
 
     return {
@@ -677,7 +810,7 @@ const RadarChart = ({ filteredData }) => {
               color: '#072D42',
               font: {
                 family: 'Plus Jakarta Sans',
-                size: 16,
+                size: 18,
                 weight: '600'
               }
             },
@@ -695,7 +828,10 @@ const RadarChart = ({ filteredData }) => {
               max: 100,
               ticks: {
                 backdropColor: 'transparent',
-                color: '#464E59'
+                color: '#464E59',
+                font: {
+                  size: 11
+                }
               },
               grid: {
                 color: 'rgba(70, 78, 89, 0.1)'
@@ -707,7 +843,7 @@ const RadarChart = ({ filteredData }) => {
                 color: '#072D42',
                 font: {
                   family: 'Inter',
-                  size: 11,
+                  size: 12,
                   weight: '500'
                 }
               }
@@ -736,13 +872,13 @@ const RadarChart = ({ filteredData }) => {
   }
 
   return (
-    <div className="chart-container">
+    <div className="chart-container large-chart">
       <canvas ref={chartRef} />
     </div>
   );
 };
 
-// NUEVO: Gráfico de Dona - Distribución ODS
+// Gráfico de Dona - Distribución ODS
 const ODSDistributionChart = ({ filteredData }) => {
   const chartRef = React.useRef(null);
   const chartInstance = React.useRef(null);
@@ -757,7 +893,7 @@ const ODSDistributionChart = ({ filteredData }) => {
 
     const sortedODS = Object.entries(odsCount)
       .sort(([,a], [,b]) => b - a)
-      .slice(0, 8); // Top 8 ODS
+      .slice(0, 8);
 
     const backgroundColors = [
       '#F29E38', '#072D42', '#BFAEA4', '#464E59',
@@ -800,7 +936,7 @@ const ODSDistributionChart = ({ filteredData }) => {
               color: '#072D42',
               font: {
                 family: 'Plus Jakarta Sans',
-                size: 16,
+                size: 18,
                 weight: '600'
               }
             },
@@ -849,14 +985,48 @@ const ODSDistributionChart = ({ filteredData }) => {
   }
 
   return (
-    <div className="chart-container">
+    <div className="chart-container large-chart">
       <canvas ref={chartRef} />
     </div>
   );
 };
 
-// Componente principal
+// Pequeña pantalla de carga (mientras loadDataFromAPI responde)
+const SmallLoading = () => (
+  <div className="loading-overlay">
+    <div className="loading-box">
+      <div className="spinner" />
+      <div style={{ marginTop: 12, textAlign: 'center' }}>
+        <strong>🔄 Cargando datos...</strong>
+        <div style={{ fontSize: 13, color: '#666' }}>Un momento, estamos obteniendo la información</div>
+      </div>
+    </div>
+  </div>
+);
+
+// Mensaje de error simple con opción de reintento / redirección
+const LoadError = ({ error, onRetry }) => {
+  const redirectPath = (error && error.redirectPath) || '/Dashboard-bicentenario';
+  const userMessage = (error && error.userMessage) || 'Ups, algo pasó. Intente más tarde.';
+
+  return (
+    <div className="error-state">
+      <div className="error-icon">⚠️</div>
+      <h3>Error al cargar los datos</h3>
+      <p>{userMessage}</p>
+      <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+        <button onClick={onRetry} className="retry-button">Reintentar</button>
+        <button onClick={() => (window.location.href = redirectPath)} className="redirect-button">
+          Ir a Inicio
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Reemplazar uso directo de datos por carga desde service
 const DashboardForUsers = () => {
+  // 1. Primero todos los useState
   const [filters, setFilters] = useState({
     rubros: [],
     tamanos: [],
@@ -866,9 +1036,15 @@ const DashboardForUsers = () => {
     esFamiliar: [],
     operaInternacional: []
   });
+  const [showFilters, setShowFilters] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [data, setData] = useState({ empresas: [] });
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
 
+  // 2. Luego los useMemo
   const filteredData = useMemo(() => {
-    let filtered = [...datos.empresas];
+    let filtered = [...(data && Array.isArray(data.empresas) ? data.empresas : [])];
 
     // Aplicar filtros
     if (filters.rubros.length > 0) {
@@ -917,59 +1093,134 @@ const DashboardForUsers = () => {
     }
 
     return { empresas: filtered };
-  }, [filters]);
+  }, [filters, data]);
 
+  const activeFiltersCount = useMemo(() => 
+    Object.values(filters).reduce((count, filterArray) => count + filterArray.length, 0),
+    [filters]
+  );
+
+  // 3. Funciones auxiliares
+  const load = async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const apiData = await loadDataFromAPI();
+      setData(apiData);
+    } catch (err) {
+      console.error('loadDataFromAPI error:', err);
+      setLoadError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 4. Por último los useEffect
+  useEffect(() => {
+    load();
+  }, []);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Renderizado condicional
+  if (loading) return <SmallLoading />;
+
+  if (loadError) {
+    return (
+      <div className="analytics-dashboard">
+        <div className="analytics-container">
+          <LoadError 
+            error={loadError} 
+            onRetry={() => { 
+              clearDatamartCache(); 
+              load(); 
+            }} 
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Render principal
   return (
     <div className="analytics-dashboard">
       <div className="analytics-container">
         <header className="analytics-header">
-          <h1 className="analytics-title">🚀 Analytics Dashboard - PowerBI Style</h1>
-          <p className="analytics-subtitle">
-            Análisis cruzado en tiempo real del ecosistema empresarial boliviano
-            {filteredData.empresas.length !== datos.empresas.length && 
-              <span className="filter-count">
-                ({filteredData.empresas.length} de {datos.empresas.length} empresas filtradas)
-              </span>
-            }
-          </p>
+          <div className="header-top">
+            {/* Nuevo botón de retorno */}
+            <button 
+              onClick={() => window.location.href = '/Dashboard-bicentenario/'}
+              className="back-home-button"
+            >
+              <span>Volver al Dashboard base</span>
+            </button>
+            
+            <div className="header-title">
+              <h1 className="analytics-title">Bicentenario Analytics Dashboard </h1>
+              <p className="analytics-subtitle">
+                Análisis cruzado en tiempo real del ecosistema empresarial boliviano
+              </p>
+            </div>
+            <button 
+              className={`filter-toggle-btn ${activeFiltersCount > 0 ? 'has-filters' : ''}`}
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <span className="filter-icon">🎛️</span>
+              <span className="filter-text">Filtros Avanzados</span>
+              {activeFiltersCount > 0 && (
+                  <span className="filter-count-badge">{activeFiltersCount}</span>
+              )}
+            </button>
+          </div>
         </header>
 
         <div className="analytics-layout">
-          {/* Panel de Filtros */}
-          <div className="filters-sidebar">
-            <FilterPanel 
-              filters={filters} 
-              onFilterChange={setFilters}
-              data={datos}
-            />
-          </div>
+          {/* Panel de Filtros (ahora overlay) */}
+          <FilterPanel 
+            filters={filters} 
+            onFilterChange={setFilters}
+            data={data}
+            isVisible={showFilters}
+            onClose={() => setShowFilters(false)}
+          />
 
-          {/* Contenido Principal */}
-          <div className="analytics-content">
+          {/* Contenido Principal - Ahora ocupa todo el ancho */}
+          <div className="analytics-content full-width">
             {/* KPIs */}
             <div className="analytics-section">
               <KPICards filteredData={filteredData} />
             </div>
 
-            {/* Primera fila de gráficos */}
+            {/* Primera fila de gráficos - 2 columnas */}
             <div className="analytics-section">
-              <div className="charts-grid">
-                <div className="chart-block">
+              <div className="charts-grid large-grid">
+                <div className="chart-block large">
                   <RubroChart filteredData={filteredData} />
                 </div>
-                <div className="chart-block">
+                <div className="chart-block large">
                   <ODSBySizeChart filteredData={filteredData} />
                 </div>
-                <div className="chart-block">
+              </div>
+            </div>
+
+            {/* Segunda fila de gráficos - 2 columnas */}
+            <div className="analytics-section">
+              <div className="charts-grid large-grid">
+                <div className="chart-block large">
                   <ODSDistributionChart filteredData={filteredData} />
                 </div>
-                <div className="chart-block">
+                <div className="chart-block large">
                   <RadarChart filteredData={filteredData} />
                 </div>
               </div>
             </div>
 
-            {/* Segunda fila de gráficos */}
+            {/* Tercera fila - gráfico completo */}
             <div className="analytics-section">
               <div className="charts-grid">
                 <div className="chart-block full-width">
@@ -977,8 +1228,6 @@ const DashboardForUsers = () => {
                 </div>
               </div>
             </div>
-
-            
           </div>
         </div>
       </div>
