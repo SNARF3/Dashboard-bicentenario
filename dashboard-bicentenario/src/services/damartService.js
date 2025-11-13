@@ -1,10 +1,6 @@
-// Servicio para obtener y cachear datos del datamart
-// - Intenta (1 intento inicial + 3 reintentos) = 4 intentos en total por defecto
-// - Validación básica de la respuesta
-// - En caso de fallo definitivo lanza un Error con campos: userMessage y redirectPath
-// - No hace redirección ni UI: deja esa responsabilidad al componente consumidor
 
-const API_URL = 'https://api-rest-bicentenario-gcex.onrender.com/datamart';
+
+const API_URL = import.meta.env.VITE_API_URL_DATAMART;
 const FETCH_TIMEOUT = 30000; // 30 segundos máximo por request
 
 let cachedData = null;

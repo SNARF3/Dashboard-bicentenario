@@ -19,7 +19,7 @@ function App() {
           <Route path="/Dashboard-Users/" element={<DashboardForUsers />} />
           
           {/* Ruta de fallback */}
-          <Route path="*" element={<Navigate to="/Dashboard-bicentenario" replace />} />
+          <Route path="*" element={<Navigate to="/Dashboard-bicentenario/" replace />} />
         </Routes>
       </div>
     </Router>
