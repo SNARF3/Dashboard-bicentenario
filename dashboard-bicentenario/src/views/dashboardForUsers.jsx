@@ -1016,7 +1016,7 @@ const SmallLoading = () => (
 
 // Mensaje de error simple con opción de reintento / redirección
 const LoadError = ({ error, onRetry }) => {
-  const redirectPath = (error && error.redirectPath) || '/Dashboard-bicentenario';
+  const redirectPath = (error && error.redirectPath) || '/Dashboard-bicentenario/';
   const userMessage = (error && error.userMessage) || 'Ups, algo pasó. Intente más tarde.';
 
   return (
@@ -1026,7 +1026,7 @@ const LoadError = ({ error, onRetry }) => {
       <p>{userMessage}</p>
       <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
         <button onClick={onRetry} className="retry-button">Reintentar</button>
-        <button onClick={() => (window.location.href = redirectPath)} className="redirect-button">
+        <button onClick={() => (window.location.href = '/Dashboard-bicentenario/')} className="redirect-button">
           Ir a Inicio
         </button>
       </div>
